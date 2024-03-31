@@ -109,7 +109,7 @@ fn draw_conjugations(verb: String) {
                 html.td(
                   [
                     attribute.class(
-                      "bg-violet-100 hover:bg-violet-200 border border-violet-300",
+                      "bg-violet-100 hover:bg-violet-200 border border-violet-300 px-1",
                     ),
                   ],
                   [element.text(x)],
@@ -160,6 +160,8 @@ fn conjugate(verb verb: Verb, with tense: Tense) -> List(String) {
     _ -> ThirdGroup
   }
   let pres_ending = string.drop_right(verb.pres3, 1)
+  let past_ending = string.drop_right(verb.pres3, 1)
+  let infintive_stem = string.drop_right(verb.infinitive, 2)
   case tense {
     Present -> {
       [
@@ -174,7 +176,63 @@ fn conjugate(verb verb: Verb, with tense: Tense) -> List(String) {
         verb.pres3,
       ]
     }
-    _ -> []
+    Past -> {
+      [
+        case conjugation_group == ThirdGroup {
+          True -> past_ending <> "au"
+          False -> past_ending <> "iau"
+        },
+        case conjugation_group == ThirdGroup {
+          True -> past_ending <> "ai"
+          False -> past_ending <> "ei"
+        },
+        verb.past3,
+        verb.pres3 <> "me",
+        verb.pres3 <> "te",
+        verb.past3,
+      ]
+    }
+    Future -> {
+      // TODO: short vowel change
+      [
+        infintive_stem <> "siu",
+        infintive_stem <> "si",
+        infintive_stem <> "s",
+        infintive_stem <> "sime",
+        infintive_stem <> "site",
+        infintive_stem <> "s",
+      ]
+    }
+    PastFrequentative -> {
+      [
+        infintive_stem <> "davau",
+        infintive_stem <> "davai",
+        infintive_stem <> "davo",
+        infintive_stem <> "davome",
+        infintive_stem <> "davote",
+        infintive_stem <> "davo",
+      ]
+    }
+    Imperative -> {
+      [
+        "-",
+        infintive_stem <> "k",
+        "te" <> verb.pres3,
+        infintive_stem <> "kime",
+        infintive_stem <> "kite",
+        "te" <> verb.pres3,
+      ]
+    }
+    Subjunctive -> {
+      [
+        infintive_stem <> "čiau",
+        infintive_stem <> "tum",
+        infintive_stem <> "tų",
+        infintive_stem <> "tumėme",
+        infintive_stem <> "tumėte",
+        infintive_stem <> "tų",
+      ]
+    }
   }
 }
 
