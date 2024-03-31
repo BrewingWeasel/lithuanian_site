@@ -83,42 +83,44 @@ type Verb {
 fn draw_conjugations(verb: String) {
   let verb_info = get_verb_details(verb)
   html.div([attribute.class("flex justify-center")], [
-    html.table([attribute.class("table-auto")], [
-      html.thead(
-        [],
-        list.map(["", "aš", "tu", "jis/ji", "mes", "jūs", "jie/jos"], fn(x) {
-          html.th(
-            [
-              attribute.class(
-                "bg-violet-200 border border-violet-400 hover:bg-violet-300 px-6",
-              ),
-            ],
-            [element.text(x)],
-          )
-        }),
-      ),
-      html.tbody(
-        [attribute.class("text-center")],
-        list.map(
-          [Present, Past, Future, Subjunctive, PastFrequentative, Imperative],
-          fn(tense) {
-            html.tr([], [
-              create_tense_table(tense),
-              ..conjugate(verb: verb_info, with: tense)
-              |> list.map(fn(x) {
-                html.td(
-                  [
-                    attribute.class(
-                      "bg-violet-100 hover:bg-violet-200 border border-violet-300 px-1",
-                    ),
-                  ],
-                  [element.text(x)],
-                )
-              })
-            ])
-          },
+    html.div([attribute.class("bg-violet-400 p-[0.15rem] rounded-md")], [
+      html.table([attribute.class("table-auto")], [
+        html.thead(
+          [],
+          list.map(["", "aš", "tu", "jis/ji", "mes", "jūs", "jie/jos"], fn(x) {
+            html.th(
+              [
+                attribute.class(
+                  "bg-violet-200 border border-violet-400 hover:bg-violet-300 px-6",
+                ),
+              ],
+              [element.text(x)],
+            )
+          }),
         ),
-      ),
+        html.tbody(
+          [attribute.class("text-center")],
+          list.map(
+            [Present, Past, Future, Subjunctive, PastFrequentative, Imperative],
+            fn(tense) {
+              html.tr([], [
+                create_tense_table(tense),
+                ..conjugate(verb: verb_info, with: tense)
+                |> list.map(fn(x) {
+                  html.td(
+                    [
+                      attribute.class(
+                        "bg-violet-100 hover:bg-violet-200 border border-violet-300 px-1",
+                      ),
+                    ],
+                    [element.text(x)],
+                  )
+                })
+              ])
+            },
+          ),
+        ),
+      ]),
     ]),
   ])
 }
@@ -271,7 +273,16 @@ fn view(route: Route) -> Element(Msg) {
           case verb {
             Some(v) ->
               html.div([], [
-                html.h1([], [element.text(v)]),
+                html.div([attribute.class("flex justify-center")], [
+                  html.h1(
+                    [
+                      attribute.class(
+                        "text-3xl font-extrabold text-violet-900 my-3",
+                      ),
+                    ],
+                    [element.text(v)],
+                  ),
+                ]),
                 draw_conjugations(v),
               ])
             None ->
