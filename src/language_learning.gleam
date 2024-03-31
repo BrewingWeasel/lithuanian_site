@@ -83,7 +83,7 @@ type Verb {
 fn draw_conjugations(verb: String) {
   let verb_info = get_verb_details(verb)
   html.div([attribute.class("flex justify-center")], [
-    html.table([attribute.class("table-auto rounded-md")], [
+    html.table([attribute.class("table-auto")], [
       html.thead(
         [],
         list.map(["", "aš", "tu", "jis/ji", "mes", "jūs", "jie/jos"], fn(x) {
@@ -160,7 +160,7 @@ fn conjugate(verb verb: Verb, with tense: Tense) -> List(String) {
     _ -> ThirdGroup
   }
   let pres_ending = string.drop_right(verb.pres3, 1)
-  let past_ending = string.drop_right(verb.pres3, 1)
+  let past_ending = string.drop_right(verb.past3, 1)
   let infintive_stem = string.drop_right(verb.infinitive, 2)
   case tense {
     Present -> {
@@ -179,16 +179,16 @@ fn conjugate(verb verb: Verb, with tense: Tense) -> List(String) {
     Past -> {
       [
         case conjugation_group == ThirdGroup {
-          True -> past_ending <> "au"
-          False -> past_ending <> "iau"
+          True -> past_ending <> "iau"
+          False -> past_ending <> "au"
         },
         case conjugation_group == ThirdGroup {
-          True -> past_ending <> "ai"
-          False -> past_ending <> "ei"
+          True -> past_ending <> "ei"
+          False -> past_ending <> "ai"
         },
         verb.past3,
-        verb.pres3 <> "me",
-        verb.pres3 <> "te",
+        verb.past3 <> "me",
+        verb.past3 <> "te",
         verb.past3,
       ]
     }
