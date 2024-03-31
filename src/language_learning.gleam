@@ -113,7 +113,19 @@ fn draw_conjugations(verb: String) {
                         "bg-violet-100 hover:bg-violet-200 border border-violet-300 px-1",
                       ),
                     ],
-                    [element.text(x)],
+                    list.map(x, fn(part) {
+                      html.span(
+                        [
+                          attribute.class(case part.1 {
+                            Prefix -> "text-blue-400"
+                            Stem -> ""
+                            Transition -> "text-violet-800"
+                            Ending -> "text-pink-400"
+                          }),
+                        ],
+                        [element.text(part.0)],
+                      )
+                    }),
                   )
                 })
               ])
@@ -155,10 +167,42 @@ type ConjugationGroup {
   ThirdGroup
 }
 
-fn conjugate(verb verb: Verb, with tense: Tense) -> List(String) {
-  let conjugation_group = case string.last(verb.pres3) {
-    Ok("a") -> FirstGroup
-    Ok("i") -> SecondGroup
+type MorphologizedWordPart {
+  Prefix
+  Stem
+  Transition
+  Ending
+}
+
+fn merge_parts(
+  stem: String,
+  ending: String,
+) -> List(#(String, MorphologizedWordPart)) {
+  let assert Ok(last_part) = string.last(stem)
+  case ending, last_part {
+    "i" <> _, "d" -> [
+      #(string.drop_right(stem, 1), Stem),
+      #("dž", Transition),
+      #(ending, Ending),
+    ]
+    "i" <> _, "t" -> [
+      #(string.drop_right(stem, 1), Stem),
+      #("č", Transition),
+      #(ending, Ending),
+    ]
+    _, _ -> [#(stem, Stem), #(ending, Ending)]
+  }
+}
+
+fn conjugate(
+  verb verb: Verb,
+  with tense: Tense,
+) -> List(List(#(String, MorphologizedWordPart))) {
+  let assert Ok(pres3_ending) = string.last(verb.pres3)
+  let assert Ok(past3_ending) = string.last(verb.past3)
+  let conjugation_group = case pres3_ending {
+    "a" -> FirstGroup
+    "i" -> SecondGroup
     _ -> ThirdGroup
   }
   let pres_ending = string.drop_right(verb.pres3, 1)
@@ -167,79 +211,78 @@ fn conjugate(verb verb: Verb, with tense: Tense) -> List(String) {
   case tense {
     Present -> {
       [
-        pres_ending <> "u",
+        merge_parts(pres_ending, "u"),
         case conjugation_group == ThirdGroup {
-          True -> pres_ending <> "ai"
-          False -> pres_ending <> "i"
+          True -> merge_parts(pres_ending, "ai")
+          False -> merge_parts(pres_ending, "i")
         },
-        verb.pres3,
-        verb.pres3 <> "me",
-        verb.pres3 <> "te",
-        verb.pres3,
+        [#(pres_ending, Stem), #(pres3_ending, Ending)],
+        merge_parts(verb.pres3, "me"),
+        merge_parts(verb.pres3, "te"),
+        [#(pres_ending, Stem), #(pres3_ending, Ending)],
       ]
     }
     Past -> {
       [
         case conjugation_group == ThirdGroup {
-          True -> past_ending <> "iau"
-          False -> past_ending <> "au"
+          True -> merge_parts(past_ending, "iau")
+          False -> merge_parts(past_ending, "au")
         },
         case conjugation_group == ThirdGroup {
-          True -> past_ending <> "ei"
-          False -> past_ending <> "ai"
+          True -> merge_parts(past_ending, "ei")
+          False -> merge_parts(past_ending, "ai")
         },
-        verb.past3,
-        verb.past3 <> "me",
-        verb.past3 <> "te",
-        verb.past3,
+        [#(past_ending, Stem), #(past3_ending, Ending)],
+        merge_parts(verb.past3, "me"),
+        merge_parts(verb.past3, "te"),
+        [#(past_ending, Stem), #(past3_ending, Ending)],
       ]
     }
     Future -> {
       // TODO: short vowel change
       [
-        infintive_stem <> "siu",
-        infintive_stem <> "si",
-        infintive_stem <> "s",
-        infintive_stem <> "sime",
-        infintive_stem <> "site",
-        infintive_stem <> "s",
+        merge_parts(infintive_stem, "siu"),
+        merge_parts(infintive_stem, "si"),
+        merge_parts(infintive_stem, "s"),
+        merge_parts(infintive_stem, "sime"),
+        merge_parts(infintive_stem, "site"),
+        merge_parts(infintive_stem, "s"),
       ]
     }
     PastFrequentative -> {
       [
-        infintive_stem <> "davau",
-        infintive_stem <> "davai",
-        infintive_stem <> "davo",
-        infintive_stem <> "davome",
-        infintive_stem <> "davote",
-        infintive_stem <> "davo",
+        merge_parts(infintive_stem, "davau"),
+        merge_parts(infintive_stem, "davai"),
+        merge_parts(infintive_stem, "davo"),
+        merge_parts(infintive_stem, "davome"),
+        merge_parts(infintive_stem, "davote"),
+        merge_parts(infintive_stem, "davo"),
       ]
     }
     Imperative -> {
       [
-        "-",
-        infintive_stem <> "k",
-        "te" <> verb.pres3,
-        infintive_stem <> "kime",
-        infintive_stem <> "kite",
-        "te" <> verb.pres3,
+        [#("-", Stem)],
+        merge_parts(infintive_stem, "k"),
+        [#("te", Prefix), #(verb.pres3, Stem)],
+        merge_parts(infintive_stem, "kime"),
+        merge_parts(infintive_stem, "kite"),
+        [#("te", Prefix), #(verb.pres3, Stem)],
       ]
     }
     Subjunctive -> {
       [
-        infintive_stem <> "čiau",
-        infintive_stem <> "tum",
-        infintive_stem <> "tų",
-        infintive_stem <> "tumėme",
-        infintive_stem <> "tumėte",
-        infintive_stem <> "tų",
+        merge_parts(infintive_stem, "čiau"),
+        merge_parts(infintive_stem, "tum"),
+        merge_parts(infintive_stem, "tų"),
+        merge_parts(infintive_stem, "tumėme"),
+        merge_parts(infintive_stem, "tumėte"),
+        merge_parts(infintive_stem, "tų"),
       ]
     }
   }
 }
 
 fn view(route: Route) -> Element(Msg) {
-  // html.div([attribute.class("bg-violet-800 text-violet-100 h-screen")], [
   html.div([attribute.class("bg-violet-100 text-violet-600 h-screen")], [
     html.nav([attribute.class("bg-violet-300/50 px-3 py-2")], [
       html.div([attribute.class("space-x-3")], [
