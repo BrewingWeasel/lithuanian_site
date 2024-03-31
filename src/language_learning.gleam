@@ -60,7 +60,7 @@ fn navigation_item(location: String, name: String) {
     [
       attribute.href("/" <> location),
       attribute.class(
-        "hover:underline decoration-pink-500 decoration-2 hover:bg-violet-300/75 rounded-md py-1 px-2",
+        "hover:underline decoration-pink-500 decoration-2 hover:bg-violet-300/75 rounded-md py-1 px-2 drop-shadow-sm",
       ),
     ],
     [element.text(name)],
@@ -255,7 +255,7 @@ fn view(route: Route) -> Element(Msg) {
           html.div([attribute.class("flex justify-center text-base")], [
             html.input([
               attribute.class(
-                "rounded-l-full bg-violet-200 text-violet-800 py-2 px-3",
+                "rounded-l-full bg-violet-200 text-violet-800 py-2 px-4 shadow-md",
               ),
               attribute.value(searching),
               event.on_input(UpdateText),
@@ -263,7 +263,7 @@ fn view(route: Route) -> Element(Msg) {
             html.button(
               [
                 attribute.class(
-                  "rounded-r-full bg-violet-400 text-slate-50 py-2 px-3",
+                  "rounded-r-full bg-violet-400 text-slate-50 py-2 px-3 shadow-md",
                 ),
                 event.on_click(Conjugate(searching)),
               ],
@@ -277,7 +277,7 @@ fn view(route: Route) -> Element(Msg) {
                   html.h1(
                     [
                       attribute.class(
-                        "text-3xl font-extrabold text-violet-900 my-3",
+                        "text-3xl font-extrabold text-violet-900 my-3 drop-shadow-sm hover:drop-shadow-md",
                       ),
                     ],
                     [element.text(v)],
